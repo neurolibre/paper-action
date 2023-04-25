@@ -1,4 +1,4 @@
-require "theoj"
+require "neurolibre"
 require "yaml"
 
 issue_id = ENV["ISSUE_ID"]
@@ -7,6 +7,7 @@ repo_branch = ENV["PAPER_BRANCH"]
 journal_alias = ENV["JOURNAL_ALIAS"]
 acceptance = ENV["COMPILE_MODE"] == "accepted"
 
+# Required neurolibre gem uses Theoj namespace. 
 journal = Theoj::Journal.new(Theoj::JOURNALS_DATA[journal_alias.to_sym])
 issue = Theoj::ReviewIssue.new(journal.data[:reviews_repository], issue_id)
 issue.paper = Theoj::Paper.from_repo(repo_url, repo_branch)
@@ -48,7 +49,7 @@ else
   raise "   !! ERROR: Paper metadata file could not be generated"
 end
 
-inara_args = "-m #{metadata_file_path} -l -o pdf,crossref,jats"
+inara_args = "-m #{metadata_file_path} -l -o neurolibre,crossref,jats"
 inara_args += ",cff -p" if acceptance
 
 system("echo 'inara_args=#{inara_args}' >> $GITHUB_OUTPUT")

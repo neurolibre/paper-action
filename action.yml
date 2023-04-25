@@ -14,11 +14,11 @@ inputs:
   journal:
     description: The journal data to use for the paper. Default is 'joss'.
     required: false
-    default: joss
+    default: neurolibre
   journal_template:
     description: The journal template to compile the paper with. Default is 'joss'.
     required: false
-    default: joss
+    default: neurolibre
   compile_mode:
     description: Compile a draft PDF or a final accepted paper. Posible values are 'draft' or 'accepted'.
     required: false
@@ -70,7 +70,7 @@ runs:
         bundle exec ruby ${{ github.action_path }}/get_paper.rb
     - name: Build paper artifacts
       id: build-paper
-      uses: xuanxu/publishing-artifacts-action@main
+      uses: neurolibre/summary-pdf-action@main
       with:
         journal: ${{ inputs.journal_template }}
         paper-path: ${{ steps.paper-finder.outputs.paper_file_path }}

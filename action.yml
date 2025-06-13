@@ -79,7 +79,7 @@ runs:
       id: compilation-result
       shell: bash
       run: |
-        ruby ${{ github.action_path }}/check_result.rb ${{ steps.paper-finder.outputs.paper_file_path }} neurolibre,crossref,jats
+        ruby ${{ github.action_path }}/check_result.rb ${{ steps.paper-finder.outputs.paper_file_path }} neurolibre,crossref
 
 branding:
   icon: file-text

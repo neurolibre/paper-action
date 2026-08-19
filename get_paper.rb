@@ -1,6 +1,33 @@
 require "neurolibre"
 require "yaml"
 
+require_relative "myst_fallback"
+
+# Theoj::Paper reads paper.md's front matter and nothing else, so a submission
+# that keeps its authors and affiliations in myst.yml -- which inara itself can
+# already build from -- fails here, before inara is ever invoked. Wrap the gem's
+# metadata load so myst.yml can supply whatever the front matter leaves out.
+module Theoj
+  class Paper
+    alias_method :load_metadata_without_myst_fallback, :load_metadata
+
+    def load_metadata
+      begin
+        load_metadata_without_myst_fallback
+      rescue Psych::Exception => e
+        # A paper.md with no front matter is parsed as a bare YAML document, and
+        # its prose may not be valid YAML at all.
+        warn "[INFO] myst-fallback: front matter unreadable (#{e.class}); using #{MystFallback::MYST_FILE}"
+        @paper_metadata = {}
+      end
+
+      @paper_metadata = MystFallback.apply(@paper_metadata, paper_path, @local_path)
+    end
+
+    private :load_metadata_without_myst_fallback, :load_metadata
+  end
+end
+
 issue_id = ENV["ISSUE_ID"]
 repo_url = ENV["REPO_URL"]
 repo_branch = ENV["PAPER_BRANCH"]

@@ -51,16 +51,23 @@ log_files_paths = []
 log_files_paths << crossref_log_path if formats.include?("crossref")
 log_files_paths << jats_log_path if formats.include?("jats")
 
-begin
-  log_files_paths.each do |log_file_path|
-    if warning_msgs.empty? && File.exist?(log_file_path)
-      logs = JSON.load_file(log_file_path)
-      warnings = logs.select { |entry| entry["verbosity"].to_s.upcase == "WARNING" }
-      warning_msgs = warnings.map {|w| w["message"]}.compact
-    end
+# A pandoc log entry's `message` is generic ("replacing image with
+# description"); what it is about is in another field, `path` for a file and
+# `source` for most of the rest. Both go into the comment, or an author cannot
+# tell which image or identifier to fix.
+log_files_paths.each do |log_file_path|
+  next unless File.exist?(log_file_path)
+  begin
+    logs = JSON.load_file(log_file_path)
+  rescue JSON::ParserError
+    system("echo 'Error parsing file #{log_file_path}'")
+    next
   end
-rescue JSON::ParserError
-  system("echo 'Error parsing file #{log_file_path}'")
+  warnings = logs.select { |entry| entry["verbosity"].to_s.upcase == "WARNING" }
+  warning_msgs += warnings.map { |w|
+    next nil unless w["message"]
+    [w["message"], w["path"] || w["source"]].compact.join(": ")
+  }.compact
 end
 
 # If warnings found post them to the GitHub issue
